@@ -20,7 +20,14 @@ startServer.stderr.on('data', (data) => {
 });
 
 startServer.on('exit', () => {
-  kill(process.env.PORT || 8000);
+  // In some minimal CI environments the "lsof" binary required by
+  // cross-port-killer may be unavailable, causing the entire test script
+  // to throw and surface as a failed run. Since the development server
+  // has already exited at this point, it is safe to swallow any error
+  // from the "kill" helper.
+  kill(process.env.PORT || 8000).catch(() => {
+    // ignore – best-effort cleanup only
+  });
 });
 
 console.log('Starting development server for e2e tests...');
